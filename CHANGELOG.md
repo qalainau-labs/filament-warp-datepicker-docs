@@ -1,6 +1,15 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.1] - 2026-11-12
+
+### Changed
+
+- Now requires Filament 5.11 or later (was 5.0). Parts of the plugin did not work on older 5.x versions, which were never tested. The tests now also run on the lowest supported versions before each release.
+
+### Fixed
+
+- Company calendar links: a malformed address such as `http:///file` is now refused with the usual "not a valid URL" message instead of a server error.
+- A date and time field near the right edge of the page (for example in the right column of a Repeater row) kept the calendar where it opened when the list of times appeared beside it, so the later times ended up off the screen and could not be clicked. The calendar now moves back inside the screen when its width changes.
 
 ## [1.0.0] - 2026-11-11
 
