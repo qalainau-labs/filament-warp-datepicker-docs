@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.2] - 2026-11-14
+
+### Fixed
+
+- Accessibility: days that are not working days, the legend, closure dates and other grey text now meet 4.5:1 (they were too light, especially on white). In dark mode the text links of the calendar (Today, Clear) are lighter. The scrolling table of opening hours on the company calendar page can be reached with the keyboard.
+
 ## [1.0.1] - 2026-11-12
 
 ### Changed
