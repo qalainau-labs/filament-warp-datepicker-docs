@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0] - 2026-11-15
+
+### Added
+
+- `canAccessUsing()` and `canWriteUsing()` on the plugin decide, from your app's roles, who can open the company calendar page and who can only look at it. See [Restricting pages per role](README.md#restricting-pages-per-role).
+
 ## [1.0.2] - 2026-11-14
 
 ### Fixed

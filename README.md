@@ -797,6 +797,27 @@ Gate::define('warp-datepicker.manage-closures', fn (User $user): bool => $user->
 
 With neither, **everyone who can open the page can change them**. In a SaaS where many people of one company sign in, set one of the two: a wrong day off moves every due date counted in business days. `storesClosures(page: false)` keeps the tables without the page, to manage days off in your own screens with the `ClosedDay` and `CalendarFeed` models.
 
+### Restricting pages per role
+
+When your app has its own roles — some people may not use a screen at all, others may only look — decide it per page, without overriding the page:
+
+```php
+use Qalainau\FilamentWarpDatePicker\Pages\CompanyCalendar;
+
+FilamentWarpDatePickerPlugin::make()
+    ->storesClosures()
+    ->canAccessUsing(fn (User $user, string $page): bool => $user->canOpen($page))
+    ->canWriteUsing(fn (User $user, string $page): bool => ! $user->isReadOnlyOn($page))
+```
+
+`$page` is the class of the page: `Qalainau\FilamentWarpDatePicker\Pages\CompanyCalendar` (the only page of the plugin).
+
+- **`canAccessUsing()` false:** the page leaves the menu, its URL answers 403, and every Livewire call to a page that is already open answers 403 too.
+- **`canWriteUsing()` false:** the page opens read-only. These are hidden: *Add a day off* (also clicking a day on the calendar), *Add a calendar link*, editing and deleting days off, *Read again* and *Remove* on calendar links, saving and resetting business hours (the grid can't be painted) and *Make a new link*. Calling `saveBusinessHours`, `resetBusinessHours` or `refreshFeed` directly answers 403 and changes nothing.
+- **Still there when read-only:** the calendar, the list of upcoming days off, switching between [calendars for each place](#a-calendar-for-each-place), the business hours grid to look at, and the subscription links to copy.
+
+Both are added to the plugin's own rules with *and*: `canManageClosures()` (or the gate) still decides who may change days off, and these callbacks can't let more people in. People who are not signed in get `false`. Without the callbacks, nothing changes.
+
 ## A calendar for each place
 
 When your warehouses, shops or offices have different working days or days off:
