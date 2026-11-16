@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.1] - 2026-11-16
+
+### Fixed
+
+- **Static analysis**: Larastan no longer reports “Call to an undefined method” for the business-day methods on Carbon (`addBusinessDays()`, `isBusinessDay()` …), also when one is called on the result of another. The plugin ships `extension.neon` (loaded automatically with `phpstan/extension-installer`; otherwise add it to `includes`). See “Static analysis” in the README.
+
 ## [1.1.0] - 2026-11-15
 
 ### Added
