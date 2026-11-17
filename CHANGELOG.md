@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.2] - 2026-11-17
+
+### Fixed
+
+- **Time fields in Spanish with `hours12(true)`**: the field shows times as “1:30 p. m.” (the way Spanish writes it), but typing a time the same way was not understood. Times written “p. m.” / “a. m.” (with any kind of space) are now read.
+
 ## [1.1.1] - 2026-11-16
 
 ### Fixed
