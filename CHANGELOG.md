@@ -1,5 +1,13 @@
 # Changelog
 
+## [Unreleased]
+
+## [1.1.3] - 2026-11-20
+
+### Fixed
+
+- **Console error `warpDate is not defined`**: on pages where Livewire re-renders a date field inside another Alpine component, the browser console could show `warpDate is not defined` before the component's script had arrived. An empty component is now registered up front, and the real one replaces it as soon as it loads. No visible change.
+
 ## [1.1.2] - 2026-11-17
 
 ### Fixed
