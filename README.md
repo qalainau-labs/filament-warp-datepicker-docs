@@ -1,6 +1,6 @@
 # Warp DatePicker
 
-**A date and time picker for Filament that knows when you are closed. It shows the public holidays of 49 countries (and their states and regions) by name, your company's own days off and business hours, and how many business days — or business hours — away a date is. It can warn about a day off or a closed hour, offer the next business day or opening time with one click, or refuse it. Up to 12 months at once, ranges with quick picks, table columns and filters, and the same counting in PHP and Carbon.**
+**A date and time picker for Filament that knows when you are closed. It shows the public holidays of 54 countries (and their states and regions) by name, your company's own days off and business hours, and how many business days — or business hours — away a date is. It can warn about a day off or a closed hour, offer the next business day or opening time with one click, or refuse it. Up to 12 months at once, ranges with quick picks, table columns and filters, and the same counting in PHP and Carbon.**
 
 <a href="https://demo.warpui.com/datepicker"><img src="https://raw.githubusercontent.com/qalainau-labs/filament-warp-datepicker-docs/main/art/live-demo.png" alt="Try the live demo: demo.warpui.com/datepicker" width="592"></a>
 
@@ -38,6 +38,7 @@ Pick Christmas as a due date and take the business day it suggests, add a compan
 - [Quick picks (presets)](#quick-picks-presets)
 - [Table filter](#table-filter)
 - [Table column: business days left](#table-column-business-days-left)
+- [Month, week, quarter or year](#month-week-quarter-or-year)
 - [Countries, states and working days](#countries-states-and-working-days)
 - [Company days off](#company-days-off)
 - [The company calendar page](#the-company-calendar-page)
@@ -54,7 +55,7 @@ Pick Christmas as a due date and take the business day it suggests, add a compan
 
 ## What it does
 
-- **Public holidays by name.** 49 countries and 157 calendars with their states and regions (`US`, `JP`, `DE-BY`, `GB-SCT`, `CA-QC`, `ES-CT`…), worked out on your server for any year. No API key, no request to another service — a lost connection can never make the holidays disappear. Japan uses the Cabinet Office list shipped with the plugin (with one-off days such as an enthronement), and Yasumi for the years after it; a new list or a newly announced holiday arrives with `composer update`, so there is nothing to download yourself. Hover a red day to see its name.
+- **Public holidays by name.** 54 countries and 162 calendars with their states and regions (`US`, `JP`, `DE-BY`, `GB-SCT`, `CA-QC`, `ES-CT`…), calculated on your server or read from bundled lists (listed years only). No API key, no request to another service — a lost connection can never make the holidays disappear. Japan uses the Cabinet Office list shipped with the plugin (with one-off days such as an enthronement), and Yasumi for the years after it; a new list or a newly announced holiday arrives with `composer update`, so there is nothing to download yourself. Hover a red day to see its name.
 - **Your own days off.** The year-end break, a founding day, an inventory count: in code, on the **Company calendar** page (one per team in a SaaS), or read from a shared iCal link such as a Google Calendar.
 - **Business days.** "5 business days from today" under the field, a minimum lead time ("2 business days to pack"), the number of days and business days in a range, and `addBusinessDays()` in PHP.
 - **Days off handled the way you want.** Only show them, warn, offer the next business day with one click, or refuse them — refused days are checked on the server too.
@@ -173,6 +174,34 @@ In the calendar:
 
 Without `displayFormat()`, the field shows the date the way the user's language writes it — *Fri, Nov 6, 2026*, *Fr., 6. Nov. 2026*, *2026年11月6日(金)*. The colors are CSS variables (`--fi-warp-date-holiday`, `--fi-warp-date-closure`, `--fi-warp-date-saturday`, `--fi-warp-date-accent`…) that you can set in your theme.
 
+### Several separate days
+
+Use `multiple()` for appointments or delivery days that do not form a range. It is off by default; a plain
+`WarpDatePicker` still saves a single date string and uses the same input.
+
+```php
+WarpDatePicker::make('dates')
+    ->multiple()
+    ->minItems(2)
+    ->maxItems(12)
+    ->minDate('2026-01-01')
+    ->maxDate('2026-12-31')
+    ->onDayOff(DayOff::Disallow);
+```
+
+Click a day to add it; click it again or use its chip's × button to remove it. There is no typing input in this mode.
+While open, the calendar stays at its opening position as chips are added or removed; single-date and range popups are unchanged.
+The empty field has an input border and calendar icon. The popup counts selected days (for example, “3 / 5 days chosen”) and explains the limit if another day is clicked at `maxItems()`. Removing a day clears that message.
+The saved value is a sorted array of unique `Y-m-d` strings. **Add an `array` or `json` cast to the model attribute**
+and use a JSON column. `minItems(int|Closure|null)` and `maxItems(int|Closure|null)` validate the number of days;
+at most 366 submitted entries are accepted even without `maxItems()`. The minimum counts distinct days.
+`minDate()`, `maxDate()`, unavailable dates and `onDayOff()` apply to each date, including server validation for
+`Disallow`. `Warn` and `Suggest` show each day off in turn; using a suggestion replaces that day only.
+`WarpDateColumn` and `WarpDateEntry` also accept arrays; Filament's `listWithLineBreaks()` can put each date on its own line.
+
+Multiple dates cannot be combined with date-time fields, range fields or presets. Use `WarpDateRangePicker`
+for a continuous range; its API does not have `multiple()`.
+
 ## Days off: warn, suggest or refuse
 
 A *day off* is a public holiday, a company day off or a weekday that is not a working day. `onDayOff()` decides what happens when someone picks one:
@@ -281,6 +310,45 @@ WarpDateTimePicker::make('pickup_at')
 - Everything from `WarpDatePicker` works: `onDayOff()`, `minBusinessDaysFromToday()`, `fillFrom()`, `unavailableDates()`, `calendar('west')`, `months()`, `inline()`…
 - The value is `Y-m-d H:i:s` in the field's `timezone()` (by default the user's, through Filament's `FilamentTimezone`) and is saved in the app's time zone, like Filament's `DateTimePicker`. Seconds are always `00`.
 - *Now* picks the current time, rounded up to the step.
+
+### Time only
+
+Use `WarpTimePicker` for a time without a date. It shares the date-time picker's time buttons, typed-time parser,
+12/24-hour display and business-hours calculation. Existing date-time fields keep their behavior.
+
+```php
+use Qalainau\FilamentWarpDatePicker\Forms\WarpTimePicker;
+
+WarpTimePicker::make('opens_at')
+    ->minutesStep(15)
+    ->timeRange('09:00', '18:00')
+    ->hours12()
+    ->businessHours()
+    ->forDateField('date');
+
+WarpTimePicker::make('weekday_time')
+    ->businessHours()
+    ->forDay(1)
+    ->businessHoursOnly();
+```
+
+The empty field shows “Choose a time” and a clock icon. A custom `placeholder()` takes precedence.
+The saved value is `H:i`, or `H:i:s` with `seconds()`, like Filament's time field. Times are wall-clock values;
+no date or timezone conversion is stored. `minutesStep(int|Closure)` is in minutes (default 15, clamped to 1–60);
+it and the inclusive `timeRange(string $from, ?string $to = null)` limits are validated on save.
+Limits use `H:i`; `24:00` is accepted as the end of the day, and a null upper limit leaves it unbounded. Type seconds when `seconds()` is enabled. `hours12(bool|Closure|null)` chooses 12-hour display;
+without it the locale decides.
+
+`businessHours(bool|Closure)` shades closed times only when enabled. `businessHoursOnly(DayOff|Closure|null $behavior = DayOff::Disallow)`
+refuses closed times in the UI and on the server by default. Typing a closed time and pressing Enter or leaving the field restores the previous display and explains why below the input. The popup explains whether closed times are crossed out and unavailable, or gray and still selectable. `DayOff::Warn` shows a warning and permits saving;
+`DayOff::Suggest` also offers the next opening time on the same day. `null` or `DayOff::Allow` permits closed times.
+No suggestion is offered when there is no later open slot that day. Hours come from the same panel, tenant and optional `calendar()`
+as `WarpDateTimePicker`. `forDay(int|Closure|null)` takes an ISO weekday (1 = Monday, 7 = Sunday).
+`forDateField(?string)` reads a sibling `Y-m-d` date and refreshes hours when it changes, including holidays and
+special opening hours; it takes precedence over `forDay()`. A missing or invalid linked date has no open hours.
+Identical hours appear once; different weekday schedules are grouped with translated weekday names.
+The compact popup opens below the field, or above when necessary. Without either option, the union of all working weekdays' opening hours is used. The opening endpoint is included,
+and the closing endpoint is excluded. Standard Filament time columns and entries are sufficient for display.
 
 ### Ways to pick a time
 
@@ -675,6 +743,43 @@ WarpDatePicker::make('delivery_slot')
 - `unavailableDates()`: days that can't be picked, with the reason shown when you hover them and in the error message on save (*Nov 12, 2026 can’t be chosen. Fully booked*). Give a list of dates, or dates with reasons.
 - Both take an array, or a closure called once per year shown, with the first and last day of that year. The closure can also take `$record` and `$get` like any Filament closure. Both work on ranges too (the labels show; an unavailable day can't be the first or last day).
 
+## Month, week, quarter or year
+
+Pick a whole period with one click, for example an invoice month or a reporting quarter. This is a separate field; existing date and date range fields keep their values and appearance.
+
+```php
+use Qalainau\FilamentWarpDatePicker\Forms\WarpPeriodPicker;
+use Qalainau\FilamentWarpDatePicker\Tables\WarpPeriodFilter;
+use Filament\Forms\Components\TextInput;
+
+WarpPeriodPicker::make('period')->month()->endField('period_end');
+TextInput::make('period_end')->readOnly();
+WarpPeriodPicker::make('week')->week();
+WarpPeriodPicker::make('quarter')->quarter()->storeAsKey();
+WarpPeriodPicker::make('year')->year();
+WarpPeriodPicker::make('fiscal_quarter')->quarter()->fiscalYearStartsIn(4);
+WarpPeriodPicker::make('fiscal_year')->year()->fiscalYearStartsIn(4);
+WarpPeriodPicker::make('month')->minDate('2026-11-15')->maxDate('2027-02-10');
+
+WarpPeriodFilter::make('invoiced_on')->month();
+WarpPeriodFilter::make('ordered_on')->quarter()->fiscalYearStartsIn(4)->column('invoiced_on');
+```
+
+| Method | Argument / behavior |
+| --- | --- |
+| `month()`, `week()`, `quarter()`, `year()` | Choose the unit; month is the default. The popup shows 12 months in three columns, the year's ISO weeks, four quarters, or 12 years, with previous/next navigation. |
+| `storeAsKey(bool $condition = true)` | Store `2026-11`, `2026-W46`, `2026-Q3`, or `2026`. Without it, store the first day as `Y-m-d`, suitable for a date column. |
+| `endField(?string $field)` | Also write the last day as `Y-m-d` to another field in the same form scope. The server recalculates it when saving, including when the picker is cleared. |
+| `fiscalYearStartsIn(int $month)` | 1–12, default 1. Applies to quarter and year. Fiscal years are named for their starting year: April-start `2026-Q4` is January–March 2027; fiscal year `2026` ends on 2027-03-31. |
+| `minDate(DateTimeInterface|string|Closure|null)`, `maxDate(...)` | Inclusive bounds, using `Y-m-d` strings. A period is selectable when any day overlaps the bounds; the stored endpoints remain the full period. Checked again on the server. |
+| `locale(string|Closure|null)` | Display language; defaults to the application's language. Month names use Intl in the browser. |
+
+Weeks always run Monday–Sunday under ISO rules: 2026-12-31 belongs to `2026-W53`, ending on 2027-01-03. Period dates must be their exact first day; malformed values, mismatched keys, nonexistent weeks, and dates outside the bounds are refused. Empty values are allowed unless `required()` is set. `disabled()` and `readOnly()` prevent selection. Supported complete periods lie within years 0001–9999.
+
+Quarter popups use two rows of two choices. With a non-January fiscal year, labels identify the fiscal year (`FY2026 Q4`, or `2026 年度 第 4 四半期` in Japanese) and show the actual months below (`Jan–Mar 2027`). Week lists use two columns, or one on narrow screens, to keep date ranges together. Popups adjust their position to fit the viewport. Saved values and January-start labels stay the same.
+
+`WarpPeriodFilter` supports the same four unit methods and `fiscalYearStartsIn(int)`. `column(string|Closure|null)` defaults to the filter's name. It compares the date column with `>=` and `<=` through Laravel's date comparisons on SQLite, MySQL, MariaDB and PostgreSQL; no database-specific month or week extraction is used. Filter state uses period keys; malformed nonempty state matches no rows.
+
 ## Countries, states and working days
 
 Set the country once on the plugin, and change it on a field when you need to:
@@ -692,7 +797,20 @@ WarpDatePicker::make('anniversary')->country(null);         // no holidays at al
 - Only days off count: official and bank holidays. Observances that are not days off (Valentine's Day, a regional saint's day only some towns keep) are left out.
 - Holiday names follow the user's language when a translation exists, then English, then the country's own language.
 - **Japan** uses the Cabinet Office list (from 1955, with substitute holidays, *kokumin no kyūjitsu* and one-off holidays such as an enthronement day). For the years after the list, it uses Yasumi, so a one-off holiday announced later arrives with a Yasumi update. Both reach you with `composer update`: you never download a holiday list yourself.
+- **China (`CN`), Taiwan (`TW`), Hong Kong (`HK`), Singapore (`SG`) and India (`IN`)** use bundled lists from [python-holidays](https://github.com/vacanza/holidays) (MIT), covering 2015–2030. Lunar holidays and substitute working days are not available in Yasumi, and the plugin does not call an external service. China announces substitute working days each autumn/winter: those are only included for announced years (currently through 2026). Taiwan's listed substitute working days are included too. They use the existing `working_dates` mechanism and count as business days even on weekends; your own `workingDates()` labels take precedence. Names use the requested language column, then a nearby language (including Taiwan/Hong Kong traditional Chinese and regional English), then the first available column. Lists arrive through plugin updates each year.
 - **Other countries** are worked out by [Yasumi](https://github.com/azuyalabs/yasumi) (MIT), included as a dependency.
+
+```php
+use Qalainau\FilamentWarpDatePicker\Holidays\CountryHolidays;
+
+WarpDatePicker::make('delivery')->country('CN');
+$calendar = HolidayCalendar::make()->country('TW');
+CountryHolidays::lastListedYear('CN'); // 2030; null for Yasumi-backed countries
+$calendar->lastListedYear();          // 2030
+```
+
+Beyond 2030 these five countries have no listed holidays and no Yasumi fallback. Date pickers warn when viewing a later year; the company calendar displays the coverage limit. Check `lastListedYear()` before relying on future business-day calculations. Custom `holidaysUsing()` calendars supply their own coverage. Maintainers update the shipped lists with `datepicker/bin/update-asia-holidays` from the monorepo root: it creates a Python virtual environment, installs/updates `holidays`, and runs the bundled `gen_holidays.py`. Set `WARP_ASIA_HOLIDAYS_VENV` to reuse a venv elsewhere. Review the generated list and release a plugin update; applications never run Python at runtime.
+
 - Not working on Saturdays? `workingDays()` decides which weekdays are business days, for the colors and for every count.
 - The first day of the week follows the country's habit (Sunday in the US, Canada, Japan, Korea, Brazil, Mexico…; Monday elsewhere) unless you set `firstDayOfWeek()`.
 
@@ -922,6 +1040,68 @@ now()->addBusinessDays(2, 'west');                  // with a calendar for one p
 
 They work on `Carbon` and `CarbonImmutable` (and Laravel's `now()`, `today()` and date casts). Like Carbon's own `addDays()`, a mutable `Carbon` is changed. If another package already added a method with the same name (for example `cmixin/business-day`), Warp DatePicker leaves it alone.
 
+## Japanese era and other calendars
+
+Show a familiar calendar while keeping stored dates Gregorian. This is opt-in; fields without
+`displayCalendar()` keep their existing display, typing rules and values.
+
+```php
+WarpDatePicker::make('birthday')->displayCalendar('japanese')->locale('ja');
+WarpDateRangePicker::make('stay')->displayCalendar('roc');
+WarpDateTimePicker::make('appointment')->displayCalendar('buddhist')->locale('th');
+WarpDateColumn::make('birthday')->displayCalendar('japanese');
+WarpDateTimeColumn::make('appointment')->displayCalendar('buddhist');
+WarpDateEntry::make('birthday')->displayCalendar('roc');
+WarpDateTimeEntry::make('appointment')->displayCalendar('japanese');
+```
+
+- `displayCalendar('japanese' | 'roc' | 'buddhist')` changes the field, calendar headings,
+  column or entry. Pass `null` to turn it off. It is independent of `calendar('west')`, which
+  chooses public holidays and business days. With this option, calendar formatting takes
+  precedence over `displayFormat()`; time values and time zones keep their usual behavior.
+- Japanese in `ja`: `令和8年11月6日`. Other locales show the short era plus a localized Gregorian date, for example `R8.11.6 (Nov 6, 2026)` in English. Calendar headings show `November 2026 (R8)`. Type
+  `R8.11.6`, `r8/11/6`, `令和8年11月6日`, `令和元年5月1日`, or the M/T/S/H era forms.
+  Full-width digits work. Dates before January 1, 1873 (Meiji 6) are unsupported. An era
+  must contain the date: `H31.4.30` is valid. `H31.5.1` keeps the previous value and
+  explains that the date is Reiwa 1, May 1, with `R1.5.1` as the correct input. The server
+  gives the same correction for submitted era text. Unreadable input shows examples in
+  the selected calendar using today’s date (Japanese long and short forms, ROC long and
+  slash forms, or Buddhist day/month/year). Fields without this option keep their usual errors.
+- ROC: `民國115年11月6日` in `zh_TW`, `民国115年11月6日` in `zh_CN`; other locales show `ROC 115/11/6 (Nov 6, 2026)` with a localized Gregorian date. Headings use `November 2026 (ROC 115)` in English. Type `115/11/6` or `民國115年11月6日` (year 1 is 1912).
+- Thai Buddhist: `6 พ.ย. 2569` in `th`, with Intl formatting in other locales; type
+  `6/11/2569` (day/month/Buddhist year).
+- All three also accept Gregorian `2026-11-06`. Date fields save `Y-m-d`; ranges retain
+  their existing start/end structure and date-time fields retain their existing time format.
+  Range fields are selected in the calendar, as before. Navigation arrows use Gregorian
+  months internally, with headings in the selected calendar. The server validates received
+  Gregorian dates again. For parsing calendar text in your own PHP code, use
+  `Support\DisplayCalendar::parse($text, $calendar)`; invalid text returns `null`.
+  `Support\DisplayCalendar::eraCorrection($text, $calendar, $locale = 'ja')` returns
+  `date` and `short` labels for a valid day in a different Japanese era, or `null` for
+  other input; it does not accept or convert a rejected value.
+
+## Week numbers
+
+Show ISO week numbers when planning work by week, without changing stored dates.
+
+```php
+WarpDatePicker::make('delivery_on')->weekNumbers();
+WarpDateRangePicker::make('leave')->weekNumbers()->firstDayOfWeek(1);
+WarpDateTimePicker::make('appointment')->weekNumbers();
+WarpDateColumn::make('ordered_on')->isoWeek();                 // 2026-W45
+WarpDateEntry::make('ordered_on')->isoWeek(withDate: true);    // 2026-11-06（W45）
+```
+
+- `weekNumbers(bool $condition = true)` adds a column on the left of the calendar. Pass
+  `false` to remove it. With a week starting on another weekday, the number belongs to the
+  Monday within that row, including a Monday outside the displayed month. Hover the number to see its Monday–Sunday range; the column heading also identifies it as an ISO week number. When the row does not start on Monday, its Sunday belongs to the preceding ISO week, so its `isoWeek()` value can differ from the row number.
+- `isoWeek(bool $withDate = false)` on a date column or entry shows the ISO week year and
+  week number. `withDate: true` shows the Gregorian date with its week number instead.
+  The ISO week year can differ from the Gregorian year near New Year (January 1, 2021 is
+  `2020-W53`). Business-day badges and holiday tooltips still work.
+- Both options are off by default and can be combined with `displayCalendar()`. On a column
+  or entry, `isoWeek()` takes precedence over calendar formatting. No database change is needed.
+
 ## Typing a date
 
 The single picker accepts typing. Press Enter or leave the field to use it:
@@ -933,6 +1113,17 @@ The single picker accepts typing. Press Enter or leave the field to use it:
 | `11/6/2026`, `6.11.2026` | The same with a year |
 | `1106` | Month and day this year (day and month where the day comes first) |
 | `2026年11月6日` | Japanese dates as written |
+
+You can type the field's displayed date back in, including short or full month and weekday names in all ten supported languages. For example, `Sun, Nov 8, 2026`, `Nov 8, 2026`, and Portuguese `dom., 8 de nov. de 2026` are accepted in their respective languages. The weekday is optional; if it disagrees with the date (`Fri, Nov 8, 2026`), the day, month and year win, giving 8 November 2026.
+
+A custom `displayFormat()` also determines how its displayed dates are read:
+
+```php
+WarpDatePicker::make('ships_on')->displayFormat('d/m/Y'); // type 08/11/2026 for 8 November
+WarpDatePicker::make('due_on')->displayFormat('l, j F Y'); // type Sunday, 8 November 2026 in English
+```
+
+`displayFormat(string $format)` uses PHP date tokens and the field's language for names. Escape literal letters with a backslash, as with PHP date formats. Use `Y` to preserve the full year when typing a displayed date; `y` reads years as 2000–2099, and a format without a year uses this year. Numeric shortcuts above remain available; when a numeric input matches the custom format, that format's order takes priority. Display and saved `Y-m-d` values are unchanged.
 
 A `WarpDateTimePicker` reads a time too — see [Typing a time](#typing-a-time). Something that isn't a date keeps the previous value and says how to type it. A day that can't be picked (outside `minDate()`/`maxDate()`, disabled, or a day off with `DayOff::Disallow`) is refused with a message.
 

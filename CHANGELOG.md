@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-23
+
+### Added
+
+- **Time-only field `WarpTimePicker`**: pick just a time (saved as `H:i`, like Filament's `TimePicker`) with the same lists, typing and gray business hours as `WarpDateTimePicker`. `businessHours()` grays the closed times, `businessHoursOnly()` refuses them (also on the server), and `forDay()` / `forDateField()` choose whose day's hours apply. See [Time only](README.md#time-only).
+- **Several separate days: `WarpDatePicker::multiple()`**: click days one by one; they show as chips you can remove, and are saved as a sorted list of `Y-m-d` dates. `minItems()` / `maxItems()` and the days-off rules are checked on the server for every day. Off unless you call it; the field then needs an `array` cast. See [Several separate days](README.md#several-separate-days).
+- **Month, week, quarter or year: `WarpPeriodPicker` and `WarpPeriodFilter`**: one click picks “November 2026”, ISO week 46 or Q3. Saves the first day of the period (or a key like `2026-11`, `2026-W46`, `2026-Q3` with `storeAsKey()`), can fill the last day into another field, and follows your fiscal year with `fiscalYearStartsIn(4)`. See [Month, week, quarter or year](README.md#month-week-quarter-or-year).
+- **Public holidays for China, Taiwan, Hong Kong, Singapore and India**: these countries were not available before (choosing them threw an error). Their holidays, including lunar-calendar ones, ship with the plugin up to 2030, and the weekend working days China and Taiwan swap in count as business days. See [Countries, states and working days](README.md#countries-states-and-working-days).
+- **Japanese era and other calendars: `displayCalendar()`**: show and type dates as 令和8年11月6日 / `R8.11.6`, 民國115年11月6日 or the Thai Buddhist year, on date fields, columns and entries. Dates are still saved as normal `Y-m-d`. Off unless you call it. See [Japanese era and other calendars](README.md#japanese-era-and-other-calendars).
+- **Week numbers: `weekNumbers()` and `isoWeek()`**: ISO week numbers beside the calendar, and `2026-W45` in columns and entries. See [Week numbers](README.md#week-numbers).
+
+### Fixed
+
+- **Typing displayed dates**: dates with localized month and weekday names, including punctuation and custom `displayFormat()` values, can now be typed back into the field in all ten supported languages. Numeric shortcuts still work; a mismatched weekday does not change the date.
+
 ## [1.1.3] - 2026-11-20
 
 ### Fixed
