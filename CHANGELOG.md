@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-11-25
+
+### Fixed
+
+- **A date typed before the picker's script finished loading was lost**: the picker loads its script when it appears, and on a slow connection or a busy device a date typed right away was cleared when the script arrived, so the field stayed empty and the record could be saved without it. The typed text now stays in the field and becomes the picker's value (when you have already moved to another field, it is read just as if you had pressed Enter). Nothing to change in your app.
+
 ## [1.2.1] - 2026-11-25
 
 ### Fixed
