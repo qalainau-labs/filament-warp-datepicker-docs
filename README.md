@@ -658,7 +658,7 @@ use Qalainau\FilamentWarpDatePicker\Tables\WarpDateRangeFilter;
 ])
 ```
 
-- The filter keeps the rows whose column is inside the range (both days included). `date` and `datetime` columns both work. The column is the filter's name; use `column('…')` for another.
+- The filter keeps the rows whose column is inside the range (both days included). `date` and `datetime` columns both work (every time on the last day is included). The column is compared as it is (`>= first day` and `< the day after the last day`), so an index on it is used, for example `['tenant_id', 'ordered_on']`. The column is the filter's name; use `column('…')` for another.
 - `dayKinds()` adds a choice: *All days*, *Business days only*, *Days off only (holidays and weekends)* — for example, to find the orders that are due on a holiday. It works on ranges up to 400 days.
 - The active filter shows as *Ordered: Jul 1, 2026 – Jun 30, 2027*.
 - `picker()` gets the `WarpDateRangePicker` in the filter, to change its presets, months, country and so on.
@@ -778,7 +778,7 @@ Weeks always run Monday–Sunday under ISO rules: 2026-12-31 belongs to `2026-W5
 
 Quarter popups use two rows of two choices. With a non-January fiscal year, labels identify the fiscal year (`FY2026 Q4`, or `2026 年度 第 4 四半期` in Japanese) and show the actual months below (`Jan–Mar 2027`). Week lists use two columns, or one on narrow screens, to keep date ranges together. Popups adjust their position to fit the viewport. Saved values and January-start labels stay the same.
 
-`WarpPeriodFilter` supports the same four unit methods and `fiscalYearStartsIn(int)`. `column(string|Closure|null)` defaults to the filter's name. It compares the date column with `>=` and `<=` through Laravel's date comparisons on SQLite, MySQL, MariaDB and PostgreSQL; no database-specific month or week extraction is used. Filter state uses period keys; malformed nonempty state matches no rows.
+`WarpPeriodFilter` supports the same four unit methods and `fiscalYearStartsIn(int)`. `column(string|Closure|null)` defaults to the filter's name. It compares the column itself with `>= first day` and `< the day after the last day` on SQLite, MySQL, MariaDB and PostgreSQL, so an index on the column is used; no database-specific month or week extraction is used, and `datetime` columns keep every time on the last day. Filter state uses period keys; malformed nonempty state matches no rows.
 
 ## Countries, states and working days
 

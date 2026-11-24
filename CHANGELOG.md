@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-25
+
+### Fixed
+
+- **`WarpPeriodFilter` and `WarpDateRangeFilter` can now use an index on the date column.** They compared `DATE(column)` (`whereDate()`), which stops MySQL, MariaDB and PostgreSQL from using an index on that column, so filtering a large table by month or range read far more rows than needed. They now compare the column itself (`>= first day` and `< the day after the last day`). The rows you get are the same for date and datetime columns, including the last day's late times and the "Business days only" / "Days off only" choices.
+
 ## [1.2.0] - 2026-11-23
 
 ### Added
