@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-11-28
+
+### Fixed
+
+- **Holidays, opening hours and booking counts are no longer missing after a slow answer**: on a busy server Livewire sometimes ends a call without its answer. The picker then treated that year (holidays, opening hours, day labels) or that day (booking counts and unavailable times) as loaded and never asked again, so they stayed missing until the page was reloaded. It now asks once more, and if there is still no answer it asks again the next time you open that month or day. A time field that follows a date field (`forDateField()`) keeps the opening hours it had instead of losing them.
+- The company calendar's "Save" for business hours no longer says the hours are saved when no answer came back; you can press it again.
+
 ## [1.2.2] - 2026-11-25
 
 ### Fixed
