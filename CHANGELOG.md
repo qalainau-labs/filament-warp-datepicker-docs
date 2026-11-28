@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-11-28
+
+### Fixed
+
+- **Text in the calendar is easier to read when the panel color is a light one (Amber, Yellow, Lime, Green…)**: the selected day and time (white text on the panel color), the "Today" and "Clear" buttons, the suggestion, the time in the header, the chosen AM/PM and the chosen preset used the panel's primary-600, which reads at only 2.6–3.2:1 with those colors. Text now uses primary-700 (primary-800 on the light primary background of a chosen preset), and the selected day and time use a primary-700 background, so every Filament color reads at 4.5:1 or more. In dark mode the selected day and time are now primary-400 with dark text (white on primary-500 was 3.8:1 even with Blue) and the text links use primary-400. Outlines and borders keep primary-600.
+
 ## [1.2.3] - 2026-11-28
 
 ### Fixed
